@@ -23,14 +23,13 @@ This guide explains how to deploy the **RetainIQ HR Analytics Dashboard** on **V
 
 ### Step 3: Project Configuration
 
-Vercel will automatically detect the settings from our configured [`vercel.json`](file:///c:/Projects/Employee_Attrition/vercel.json):
+In the Vercel project configuration screen:
 
 * **Framework Preset:** `Vite` (Auto-detected)
-* **Root Directory:**
-  * **Option A (Recommended):** Click **Edit** next to Root Directory and select `frontend`.
-  * **Option B:** Leave as `./` (The root [`vercel.json`](file:///c:/Projects/Employee_Attrition/vercel.json) handles building `frontend` automatically).
-* **Build Command:** `npm run build`
-* **Output Directory:** `dist`
+* **Root Directory:** Click **Edit** next to Root Directory and select **`frontend`** *(Critical)*.
+* **Build Command:** `npm run build` (Default)
+* **Output Directory:** `dist` (Default)
+* **Install Command:** `npm install` (Default)
 
 ---
 
