@@ -1,0 +1,143 @@
+{
+  "DashboardName": "RetainIQ-MLOps-Production-Overview",
+  "DashboardBody": {
+    "widgets": [
+      {
+        "type": "metric",
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "RetainIQ/MLOps", "PredictionDriftZScore", { "stat": "Average", "color": "#ff7f0e", "period": 300 } ]
+          ],
+          "view": "timeSeries",
+          "stacked": false,
+          "region": "us-east-1",
+          "title": "MLOps Prediction Drift (Z-Score vs Threshold 2.0)",
+          "annotations": {
+            "horizontal": [
+              {
+                "color": "#d62728",
+                "label": "Automated Retraining Threshold (Z > 2.0)",
+                "value": 2.0
+              }
+            ]
+          },
+          "yAxis": {
+            "left": {
+              "min": 0,
+              "max": 6
+            }
+          }
+        }
+      },
+      {
+        "type": "metric",
+        "x": 12,
+        "y": 0,
+        "width": 12,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "RetainIQ/API", "InferenceLatencyMs", { "stat": "p95", "color": "#1f77b4", "period": 300 } ],
+            [ "RetainIQ/API", "InferenceLatencyMs", { "stat": "Average", "color": "#2ca02c", "period": 300 } ]
+          ],
+          "view": "timeSeries",
+          "stacked": false,
+          "region": "us-east-1",
+          "title": "FastAPI Inference Latency (p95 & Average ms)",
+          "yAxis": {
+            "left": {
+              "min": 0,
+              "max": 1000
+            }
+          }
+        }
+      },
+      {
+        "type": "metric",
+        "x": 0,
+        "y": 6,
+        "width": 12,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", "app/retainiq-alb/1234567890", { "stat": "Sum", "color": "#d62728" } ],
+            [ "AWS/ApplicationELB", "HTTPCode_Target_4XX_Count", "LoadBalancer", "app/retainiq-alb/1234567890", { "stat": "Sum", "color": "#ffbb78" } ],
+            [ "AWS/ApplicationELB", "RequestCount", "LoadBalancer", "app/retainiq-alb/1234567890", { "stat": "Sum", "color": "#aec7e8" } ]
+          ],
+          "view": "timeSeries",
+          "stacked": false,
+          "region": "us-east-1",
+          "title": "API Gateway Traffic & HTTP Error Rates"
+        }
+      },
+      {
+        "type": "metric",
+        "x": 12,
+        "y": 6,
+        "width": 12,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", "retainiq-postgres-prod", { "stat": "Average", "color": "#9467bd" } ],
+            [ "AWS/RDS", "FreeableMemory", "DBInstanceIdentifier", "retainiq-postgres-prod", { "stat": "Average", "color": "#8c564b" } ]
+          ],
+          "view": "timeSeries",
+          "stacked": false,
+          "region": "us-east-1",
+          "title": "Amazon RDS PostgreSQL Health & CPU Utilization"
+        }
+      }
+    ]
+  },
+  "Alarms": [
+    {
+      "AlarmName": "RetainIQ-MLOps-Drift-Exceeded",
+      "AlarmDescription": "Triggers automated model retraining when prediction distribution drift Z-score exceeds 2.0 (PRD TC-04).",
+      "Namespace": "RetainIQ/MLOps",
+      "MetricName": "PredictionDriftZScore",
+      "Statistic": "Average",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 2.0,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "TreatMissingData": "notBreaching",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:retainiq-drift-retrain-topic"
+      ]
+    },
+    {
+      "AlarmName": "RetainIQ-API-HighLatency-500ms",
+      "AlarmDescription": "Alerts when p95 inference latency exceeds 500ms threshold for 2 consecutive evaluation periods.",
+      "Namespace": "RetainIQ/API",
+      "MetricName": "InferenceLatencyMs",
+      "ExtendedStatistic": "p95",
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 500.0,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "TreatMissingData": "notBreaching",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:retainiq-devops-alerts"
+      ]
+    },
+    {
+      "AlarmName": "RetainIQ-High-5xx-Errors",
+      "AlarmDescription": "Alerts on 5xx server error rate spike exceeding 5 errors within 5 minutes.",
+      "Namespace": "AWS/ApplicationELB",
+      "MetricName": "HTTPCode_Target_5XX_Count",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 5.0,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "TreatMissingData": "notBreaching",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:retainiq-devops-alerts"
+      ]
+    }
+  ]
+}

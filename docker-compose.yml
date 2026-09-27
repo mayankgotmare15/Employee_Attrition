@@ -1,9 +1,10 @@
 version: '3.8'
 
 services:
+  # 1. PostgreSQL Relational Persistence Layer
   postgres:
     image: postgres:15-alpine
-    container_name: attrition-postgres
+    container_name: retainiq-postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -13,25 +14,45 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - retainiq-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d attrition_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
+  # 2. FastAPI ML Microservice & MLOps Drift Retraining Engine
   ml-service:
     build:
       context: ./ml-service
       dockerfile: Dockerfile
-    container_name: attrition-ml-service
+    container_name: retainiq-ml-service
     restart: always
     ports:
       - "8000:8000"
     environment:
       - PORT=8000
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - model_data:/app/models
+    networks:
+      - retainiq-network
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # 3. Node.js Express API Gateway & Authentication Layer
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: attrition-backend
+    container_name: retainiq-backend
     restart: always
     ports:
       - "5000:5000"
@@ -41,9 +62,57 @@ services:
       - DATABASE_URL=postgresql://postgres:password123@postgres:5432/attrition_db?schema=public
       - JWT_SECRET=attrition_prediction_super_secret_jwt_2026
       - ML_SERVICE_URL=http://ml-service:8000
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - retainiq-network
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:5000/api/v1/health').then(r => process.exit(r.ok ? 0 : 1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 4. React Vite Web Dashboard (Nginx Static Bundle)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: retainiq-frontend
+    restart: always
+    networks:
+      - retainiq-network
+    depends_on:
+      - backend
+
+  # 5. Edge Nginx Reverse Proxy & Load Balancer
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: retainiq-nginx-edge
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - retainiq-network
+    depends_on:
+      - frontend
+      - backend
       - ml-service
+
+networks:
+  retainiq-network:
+    driver: bridge
 
 volumes:
   pgdata:
+    driver: local
+  model_data:
+    driver: local
+  uploads_data:
+    driver: local

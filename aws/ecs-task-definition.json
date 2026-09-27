@@ -1,0 +1,101 @@
+{
+  "family": "retainiq-task-def",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/retainiqTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "ml-service",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/retainiq-ml-service:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "PORT", "value": "8000" },
+        { "name": "PYTHONUNBUFFERED", "value": "1" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/retainiq-ml-service",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ml"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 15
+      }
+    },
+    {
+      "name": "backend",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/retainiq-backend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "PORT", "value": "5000" },
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "ML_SERVICE_URL", "value": "http://127.0.0.1:8000" }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:retainiq/database-url"
+        },
+        {
+          "name": "JWT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:retainiq/jwt-secret"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/retainiq-backend",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "backend"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "node -e \"fetch('http://localhost:5000/api/v1/health').then(r => process.exit(r.ok ? 0 : 1))\""],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 15
+      }
+    },
+    {
+      "name": "frontend",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/retainiq-frontend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/retainiq-frontend",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "frontend"
+        }
+      }
+    }
+  ]
+}
