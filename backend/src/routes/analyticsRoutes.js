@@ -1,5 +1,10 @@
 const express = require('express');
-const { getDashboardOverview } = require('../controllers/analyticsController');
+const {
+  getDashboardOverview,
+  getDriftTelemetry,
+  simulateDriftAndRetrain,
+  triggerManualRetrain,
+} = require('../controllers/analyticsController');
 const { authenticateToken, requireRoles } = require('../middleware/auth');
 const MLClient = require('../services/mlClient');
 
@@ -17,5 +22,10 @@ router.get('/model-metrics', requireRoles('ADMIN', 'HR_MANAGER', 'HR_ANALYST'), 
     next(err);
   }
 });
+
+// MLOps Endpoints
+router.get('/drift-status', getDriftTelemetry);
+router.post('/simulate-drift', requireRoles('ADMIN', 'HR_MANAGER'), simulateDriftAndRetrain);
+router.post('/trigger-retrain', requireRoles('ADMIN', 'HR_MANAGER'), triggerManualRetrain);
 
 module.exports = router;

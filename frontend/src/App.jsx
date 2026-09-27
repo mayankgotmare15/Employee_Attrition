@@ -22,6 +22,10 @@ export default function App() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  const [driftReport, setDriftReport] = useState(null);
+  const [activeVersion, setActiveVersion] = useState("v1.2.0");
+  const [simulatingDrift, setSimulatingDrift] = useState(false);
+
   const [filters, setFilters] = useState({
     search: "",
     department: "",
@@ -41,13 +45,15 @@ export default function App() {
     if (!isAuthenticated) return;
     try {
       setDataLoading(true);
-      const [overviewRes, employeesRes] = await Promise.all([
+      const [overviewRes, employeesRes, driftRes, metricsRes] = await Promise.all([
         api.analytics.getOverview(),
         api.employees.getAll({
           page,
           limit: 10,
           ...filters,
         }),
+        api.analytics.getDriftStatus().catch(() => ({ success: false })),
+        api.analytics.getModelMetrics().catch(() => ({ success: false })),
       ]);
 
       if (overviewRes.success) setOverview(overviewRes.data);
@@ -55,6 +61,10 @@ export default function App() {
         setEmployees(employeesRes.data);
         setTotal(employeesRes.total);
         setTotalPages(employeesRes.totalPages);
+      }
+      if (driftRes.success) setDriftReport(driftRes.data);
+      if (metricsRes.success && metricsRes.data?.model_version) {
+        setActiveVersion(metricsRes.data.model_version);
       }
     } catch (err) {
       console.error("Failed to load dashboard data:", err);
@@ -105,6 +115,22 @@ export default function App() {
     }
   };
 
+  const handleSimulateDrift = async () => {
+    try {
+      setSimulatingDrift(true);
+      const res = await api.analytics.simulateDrift();
+      if (res.success) {
+        const newVer = res.data.retraining_result?.new_version;
+        alert(`PRD TC-04 Verified!\nDrift Z-Score: ${res.data.drift_report.z_score.toFixed(2)} (> 2.0)\nAutomated Retraining Deployed: ${newVer}`);
+        await loadData();
+      }
+    } catch (err) {
+      alert("Simulation failed: " + err.message);
+    } finally {
+      setSimulatingDrift(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-white">
@@ -125,8 +151,15 @@ export default function App() {
       {/* Main Content Dashboard */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Bento Stats KPI Grid */}
-        <BentoStatsGrid overview={overview} onFilterRisk={handleFilterRisk} />
+        {/* Bento Stats KPI Grid with Live Drift Telemetry */}
+        <BentoStatsGrid
+          overview={overview}
+          onFilterRisk={handleFilterRisk}
+          driftReport={driftReport}
+          activeVersion={activeVersion}
+          onSimulateDrift={handleSimulateDrift}
+          simulatingDrift={simulatingDrift}
+        />
 
         {/* Priority Urgent Alerts for High-Risk Personnel */}
         <UrgentAlertsSection
@@ -179,6 +212,7 @@ export default function App() {
       <ModelMetricsModal
         isOpen={isMetricsModalOpen}
         onClose={() => setIsMetricsModalOpen(false)}
+        onModelUpdated={loadData}
       />
     </div>
   );

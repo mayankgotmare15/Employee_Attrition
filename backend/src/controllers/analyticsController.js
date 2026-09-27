@@ -1,4 +1,5 @@
 const prisma = require('../prisma');
+const MLClient = require('../services/mlClient');
 
 /**
  * Get comprehensive HR dashboard statistics and risk distribution
@@ -137,6 +138,96 @@ async function getDashboardOverview(req, res, next) {
   }
 }
 
+/**
+ * Get current statistical drift telemetry
+ */
+async function getDriftTelemetry(req, res, next) {
+  try {
+    const driftReport = await MLClient.getDriftStatus();
+    res.json({
+      success: true,
+      data: driftReport,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Helper to sync newly retrained version into PostgreSQL
+ */
+async function syncRetrainedVersion(retrainData) {
+  if (!retrainData || retrainData.status !== 'DEPLOYED') return null;
+
+  // Archive existing active versions
+  await prisma.modelVersion.updateMany({
+    where: { status: 'ACTIVE' },
+    data: { status: 'ARCHIVED' },
+  });
+
+  // Insert & activate new model version
+  const newVersion = await prisma.modelVersion.create({
+    data: {
+      version: retrainData.new_version,
+      algorithm: retrainData.champion_algorithm,
+      accuracy: retrainData.metrics.accuracy,
+      f1Score: retrainData.metrics.f1_score,
+      rocAuc: retrainData.metrics.roc_auc,
+      precision: retrainData.metrics.precision,
+      recall: retrainData.metrics.recall,
+      status: 'ACTIVE',
+      trainedAt: new Date(retrainData.retrained_at),
+    },
+  });
+
+  return newVersion;
+}
+
+/**
+ * PRD TC-04: Simulate prediction drift and trigger automated retraining
+ */
+async function simulateDriftAndRetrain(req, res, next) {
+  try {
+    const result = await MLClient.simulateDrift();
+    
+    // If retraining was triggered and new model deployed, sync with PostgreSQL
+    if (result.retraining_result && result.retraining_result.status === 'DEPLOYED') {
+      const dbVersion = await syncRetrainedVersion(result.retraining_result);
+      result.db_version = dbVersion;
+    }
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Manually trigger retraining
+ */
+async function triggerManualRetrain(req, res, next) {
+  try {
+    const result = await MLClient.triggerRetrain();
+    if (result.status === 'DEPLOYED') {
+      const dbVersion = await syncRetrainedVersion(result);
+      result.db_version = dbVersion;
+    }
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getDashboardOverview,
+  getDriftTelemetry,
+  simulateDriftAndRetrain,
+  triggerManualRetrain,
 };

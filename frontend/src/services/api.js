@@ -56,6 +56,15 @@ export const api = {
   analytics: {
     getOverview: () => request("/analytics/overview"),
     getModelMetrics: () => request("/analytics/model-metrics"),
+    getDriftStatus: () => request("/analytics/drift-status"),
+    simulateDrift: () =>
+      request("/analytics/simulate-drift", {
+        method: "POST",
+      }),
+    triggerRetrain: () =>
+      request("/analytics/trigger-retrain", {
+        method: "POST",
+      }),
   },
 
   employees: {
