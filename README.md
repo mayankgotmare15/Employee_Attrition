@@ -1,207 +1,88 @@
-# RetainIQ: Employee Attrition Prediction & HR Analytics System with MLOps
+# Employee Attrition Prediction & HR Analytics System with MLOps
 
-[![CI Pipeline](https://github.com/retainiq/employee-attrition-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/retainiq/employee-attrition-mlops/actions/workflows/ci.yml)
-[![Python 3.10](https://img.shields.io/badge/Python-3.10-3776AB.svg?logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org)
-[![React 18](https://img.shields.io/badge/React-18.3-61DAFB.svg?logo=react&logoColor=black)](https://react.dev)
-[![React Native](https://img.shields.io/badge/React_Native-Expo-61DAFB.svg?logo=react&logoColor=black)](https://reactnative.dev)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1.svg?logo=postgresql&logoColor=white)](https://postgresql.org)
-[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748.svg?logo=prisma&logoColor=white)](https://prisma.io)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?logo=docker&logoColor=white)](https://docker.com)
-[![AWS](https://img.shields.io/badge/AWS-Fargate%20%7C%20RDS%20%7C%20CloudWatch-FF9900.svg?logo=amazon-aws&logoColor=white)](https://aws.amazon.com)
-
-> **Academic & Industry Partnership:**  
-> **Department of Information Technology**, St. Vincent Pallotti College of Engineering and Technology, Nagpur  
-> In Collaboration with **IT DAKSH**  
-> **Industry Mentor:** Ms. Pooja Arora | **Project Guide:** Dr. A. Gahankar | **Alumni Mentor:** Mr. Karan Masirkar  
-> **Engineering Team:** Pranav Shende & Mayank Gotmare (Academic Year 2026–27)
+An end-to-end Machine Learning and HR Analytics system designed to help organizations proactively identify employees at risk of leaving, understand the key reasons why using Explainable AI (SHAP), and take retention actions before resignation occurs.
 
 ---
 
-## 📖 Executive Summary
+## 👥 Project Information & Team
 
-**RetainIQ** is an enterprise-grade, multi-tier MLOps platform engineered to shift workforce management from *reactive exit interviews* to *proactive retention interventions*. By continuously analyzing 30+ workplace, compensation, and sentiment attributes, RetainIQ predicts individual employee attrition risk, categorizes personnel into calibrated PRD risk tiers, generates explainable AI feature attributions (SHAP drivers), and surfaces actionable retention strategies across a modern React web dashboard and React Native mobile application.
-
-An autonomous **MLOps telemetry engine** monitors real-time prediction distribution drift ($Z$-score) and triggers automated continuous retraining when $Z > 2.0$, preventing model degradation in production.
+* **Institution:** Department of Information Technology, St. Vincent Pallotti College of Engineering and Technology, Nagpur
+* **Academic Year:** 2026–27
+* **Industry Partner:** IT DAKSH
+* **Industry Mentor:** Ms. Pooja Arora
+* **Project Guide:** Dr. A. Gahankar
+* **Alumni Mentor:** Mr. Karan Masirkar
+* **Team Members:**
+  * **Pranav Shende** (Backend API, Security & RBAC, Mobile Application, Cloud Infrastructure)
+  * **Mayank Gotmare** (ML Pipeline, Feature Engineering, MLOps Retraining, Web Dashboard)
 
 ---
 
-## 🏛️ System Architecture Topology
+## ✨ Key Features
 
-```mermaid
-flowchart TD
-    subgraph Clients["Presentation Layer"]
-        Web["React 18 Web Dashboard\n(Aceternity UI + Dribbble Dark)"]
-        Mobile["React Native / Expo Mobile App\n(iOS & Android)"]
-    end
+1. **AI-Powered Attrition Risk Scoring:**
+   * Predicts attrition probability for any employee in real-time.
+   * Categorizes risk into actionable tiers: **Low (<40%)**, **Medium (40%–70%)**, and **High (>70%)**.
+   * Selected champion model: **Class-Weighted Logistic Regression** ($\text{ROC-AUC} = 0.8080$, $\text{Recall} = 68.09\%$).
 
-    subgraph Edge["Edge & Load Balancing"]
-        Nginx["Nginx Reverse Proxy & Load Balancer\n(:80 / :443)"]
-    end
+2. **Explainable AI (SHAP):**
+   * Transparently explains *why* an employee is flagged (e.g., high overtime, commute distance, promotion lag, salary satisfaction).
+   * Generates tailored HR retention recommendations for each individual.
 
-    subgraph AppTier["Application & API Gateway Tier"]
-        Backend["Node.js Express API Gateway (:5000)\n(JWT Auth, RBAC, Multer CSV Engine)"]
-    end
+3. **Modern Web Dashboard (Aceternity UI + Dark Mode):**
+   * Bento KPI metric cards with live statistics.
+   * Interactive risk distribution and department vulnerability charts.
+   * Priority leaver alerts and filterable workforce directory.
+   * **Flexible Bulk CSV Upload:** Ingest and score up to 1,500+ employee records in seconds with automatic column mapping and downloadable sample templates.
 
-    subgraph MLTier["MLOps & Inference Microservice Tier"]
-        FastAPI["FastAPI ML Inference Service (:8000)\n(Vectorized Batch Inference, SHAP Drivers)"]
-        Drift["Statistical Drift Engine\n(Rolling Z-Score & PSI Monitor)"]
-        Retrain["Automated Continuous Retraining\n(Champion Selection & Hot Reload)"]
-    end
+4. **Cross-Platform Mobile App (React Native / Expo):**
+   * Accessible on iOS and Android for department managers and HR executives on the go.
+   * Workforce overview, high-risk notifications, and individual employee drill-down cards.
 
-    subgraph Persistence["Persistence & Cloud Layer"]
-        Postgres["PostgreSQL 15 (Prisma ORM)\n(Users, Employees, Predictions, Registry)"]
-        AWS_S3["Amazon S3\n(Model Artifacts & Archives)"]
-        CloudWatch["Amazon CloudWatch\n(Z > 2.0 Alarms & Latency Telemetry)"]
-    end
+5. **Automated MLOps Retraining Loop:**
+   * Real-time monitoring of statistical prediction drift ($Z$-score).
+   * Automatically triggers continuous model retraining whenever $Z > 2.0$ to prevent model degradation over time.
 
-    Web --> Nginx
-    Mobile --> Nginx
-    Nginx -->|/api/*| Backend
-    Nginx -->|/ml/*| FastAPI
-    Backend --> Postgres
-    Backend -->|JSON Features| FastAPI
-    FastAPI --> Drift
-    Drift -->|Z > 2.0 Trigger| Retrain
-    Retrain --> Postgres
-    Retrain --> AWS_S3
-    FastAPI --> CloudWatch
+---
+
+## 🏗️ How the System Works
+
+```
+[ React Web Dashboard / Mobile App ]
+                 │
+                 ▼
+[ Node.js API Gateway (Port 5000) ] ────▶ [ PostgreSQL (Database) ]
+                 │
+                 ▼
+[ FastAPI ML Microservice (Port 8000) ]
+        ├── ML Model (Logistic Regression)
+        ├── Explainability Engine (SHAP)
+        └── MLOps Drift Monitor (Z > 2.0 Auto-Retraining)
 ```
 
 ---
 
-## 📦 Multi-Tier SDLC Modules & Directory Structure
+## 🚀 Quick Start Guide
 
-```
-Employee_Attrition/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                 # Automated full-stack CI test matrix
-│       └── deploy.yml             # Docker build & Amazon ECS deployment
-├── aws/
-│   ├── deploy_guide.md            # AWS ECS Fargate, RDS, S3 production runbook
-│   ├── cloudwatch_monitoring.json # CloudWatch dashboards & drift alarms
-│   └── ecs-task-definition.json   # AWS Fargate multi-container task definition
-├── nginx/
-│   ├── nginx.conf                 # Edge reverse proxy & compression rules
-│   └── Dockerfile                 # Alpine Nginx container
-├── ml-service/                    # Python 3.10 FastAPI ML & MLOps Engine
-│   ├── app/
-│   │   ├── main.py                # FastAPI entrypoint & router registry
-│   │   ├── predictor.py           # Vectorized batch inference & SHAP pipeline
-│   │   ├── schemas.py             # Resilient Pydantic v2 schemas
-│   │   └── routes/                # Predict, Health, and MLOps API endpoints
-│   ├── src/
-│   │   ├── data_pipeline.py       # Data cleaning, feature engineering, transformer
-│   │   ├── train.py               # Champion benchmarking (LogReg vs RF vs XGBoost)
-│   │   ├── explainability.py      # Batch SHAP explainer (Linear & Tree)
-│   │   ├── drift_monitor.py       # Rolling Z-score calculation engine
-│   │   └── retrain.py             # Continuous training & versioning pipeline
-│   ├── models/                    # Serialized champion model & metadata
-│   └── tests/                     # Pytest test suites (unit & MLOps)
-├── backend/                       # Node.js Express API Gateway
-│   ├── prisma/
-│   │   ├── schema.prisma          # PostgreSQL schema (RBAC, Employees, Predictions)
-│   │   └── seed.js                # Default personas & champion model seeder
-│   ├── src/
-│   │   ├── controllers/           # Auth, Employees (CSV Ingestion), Predictions, Analytics
-│   │   ├── middleware/            # JWT authentication & Department Isolation RBAC
-│   │   ├── routes/                # REST API routes
-│   │   └── services/              # MLClient microservice connector
-│   └── test/                      # Node.js backend integration test suites
-├── frontend/                      # React 18 HR Analytics Web Dashboard
-│   ├── src/
-│   │   ├── components/            # Aceternity UI Bento Cards, Charts, Directory, Modals
-│   │   ├── services/              # REST API Client with JWT bearer handling
-│   │   └── App.jsx                # Main analytical application shell
-│   └── package.json
-├── mobile/                        # React Native / Expo Mobile Application
-│   ├── src/
-│   │   ├── screens/               # Login, Dashboard, Urgent Alerts, Directory, Detail
-│   │   ├── components/            # Glassmorphic KPI cards & SHAP factor charts
-│   │   └── services/              # Mobile API client
-│   └── package.json
-├── docker-compose.yml             # Unified 5-container production composition
-├── test_all.js                    # Full-stack automated test runner (100% Pass)
-└── README.md
-```
+### Prerequisites
+* **Node.js** (v18 or v20+)
+* **Python** (v3.10+)
+* **PostgreSQL** running locally on port `5432` with a database named `attrition_db`
 
 ---
 
-## 🏆 Model Performance Benchmarks (Phase 1)
-
-Benchmarked on the 1,470-record, 35-attribute standard IBM HR Analytics dataset with stratified 80/20 train/test split:
-
-| Algorithm | Accuracy | Precision | Recall | F1-Score | ROC-AUC | Status |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Logistic Regression (Class-Weighted)** | **78.57%** | **0.4000** | **0.6809** | **0.5039** | **0.8080** | **Champion Selected** |
-| Random Forest Classifier | 85.03% | 0.6000 | 0.1915 | 0.2903 | 0.7766 | Baseline |
-| XGBoost Classifier | 85.71% | 0.6111 | 0.2340 | 0.3385 | 0.7765 | Baseline |
-
-* **Selection Rationale:** In proactive employee attrition retention, **Recall is the critical metric** (minimizing False Negatives so at-risk employees are not missed). Logistic Regression captured **68.09% of all actual leavers** with a superior ROC-AUC of **0.8080**.
-
----
-
-## 🔄 Autonomous MLOps Retraining Loop (Phase 4 & PRD TC-04)
-
-```
-[Inference Stream] ──> [Rolling Z-Score Calculation] 
-                              │
-                              ├── (Z <= 2.0) ──> [Normal Operation: Store Prediction]
-                              │
-                              └── (Z > 2.0)  ──> [AUTOMATED RETRAINING TRIGGERED]
-                                                        │
-                                                        ▼
-                                       1. Fetch fresh DB records + baseline
-                                       2. Re-fit Preprocessor & Train Champion
-                                       3. Bump Model Version (e.g. v1.0.0 -> v1.1.0)
-                                       4. Archive previous model to /models/archive
-                                       5. Hot-reload memory & sync PostgreSQL registry
-```
-
----
-
-## ⚡ Unified Full-Stack Test Suite
-
-RetainIQ includes an automated test runner that validates all four layers in a single pass:
-
-```powershell
-node test_all.js
-```
-
-### Verified Test Matrix:
-* **Suite 1 (ML Microservice):** Pytest validation of `/health`, `/metrics`, `POST /predict`, `POST /predict/batch` (**6/6 Passed**).
-* **Suite 2 (MLOps Drift Engine):** Real-time Z-score calculation and PRD TC-04 automated retraining trigger (**3/3 Passed**).
-* **Suite 3 (Backend API Gateway):** JWT Auth, Role-Based Access Control, Department Isolation, Employee CRUD, Analytics (**6/6 Passed**).
-* **Suite 4 (Frontend Production Build):** React 18 production bundle verification via Vite (**Zero Errors**).
-
----
-
-## 🚀 Quickstart & Local Setup
-
-### Option A: 1-Click Production Docker Compose (Recommended)
-```bash
-docker-compose up --build -d
-```
-* **Web Dashboard:** [http://localhost](http://localhost) (via Nginx edge router)
-* **Backend API Gateway:** [http://localhost/api/v1](http://localhost/api/v1)
-* **FastAPI Docs & Swagger:** [http://localhost/ml/docs](http://localhost/ml/docs)
-
----
-
-### Option B: Local Development Setup
-
-#### 1. Start PostgreSQL
-Ensure PostgreSQL is running locally on port 5432 with database `attrition_db`.
-
-#### 2. Start ML Microservice
+### Step 1: Start the ML Microservice
 ```powershell
 cd ml-service
+pip install -r requirements.txt
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
+* **Swagger API Documentation:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-#### 3. Start Backend API Gateway
+---
+
+### Step 2: Start the Node.js Backend API
+Open a second terminal:
 ```powershell
 cd backend
 npm install
@@ -209,27 +90,110 @@ npx prisma db push
 node prisma/seed.js
 npm run dev
 ```
+* **Backend API Gateway:** [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-#### 4. Start React Web Dashboard
+---
+
+### Step 3: Start the React Web Dashboard
+Open a third terminal:
 ```powershell
 cd frontend
 npm install
 npm run dev
 ```
-Open [http://localhost:5173](http://localhost:5173).
+* **Web Application:** [http://127.0.0.1:5173](http://127.0.0.1:5173)
 
 ---
 
-## 🔐 Demo Credentials (Seeded RBAC Personas)
+### Step 4 (Optional): Start the Mobile App
+Open a fourth terminal:
+```powershell
+cd mobile
+npm install
+npm start
+```
+* Scan the QR code using the **Expo Go** app on your phone, or press `w` to open the web preview.
 
-| Role | Email | Password | Access Scope |
+---
+
+### Option B: Run Everything via Docker Compose (1 Command)
+If you have Docker Desktop installed, you can launch the entire stack at once:
+```bash
+docker-compose up --build
+```
+* Web Dashboard: [http://localhost](http://localhost)
+* API Gateway: [http://localhost/api/v1](http://localhost/api/v1)
+* ML Docs: [http://localhost/ml/docs](http://localhost/ml/docs)
+
+---
+
+## 🧪 Testing the Project
+
+RetainIQ includes a single, unified test command that runs all 4 test suites across the entire stack:
+
+```powershell
+node test_all.js
+```
+
+### What gets tested:
+1. **ML Microservice:** Verifies health checks, metrics, and risk prediction endpoints.
+2. **MLOps Drift Engine:** Simulates prediction drift ($Z > 2.0$) and confirms automated retraining (PRD TC-04).
+3. **Backend API Gateway:** Tests JWT authentication, role permissions, and employee queries.
+4. **Frontend Production Build:** Validates that the React application compiles cleanly without errors.
+
+---
+
+## 🔑 Demo Login Accounts
+
+You can switch between these pre-configured accounts directly in the dashboard or mobile app:
+
+| Role | Email | Password | What They Can Access |
 | :--- | :--- | :--- | :--- |
-| **System Admin** | `admin@company.com` | `Password@123` | Full enterprise control, MLOps retraining, model registry |
-| **HR Manager** | `hrmanager@company.com` | `Password@123` | Enterprise-wide directory, priority retention leavers, batch CSV |
-| **HR Analyst** | `hranalyst@company.com` | `Password@123` | Workforce analytics, trend drill-down, real-time re-scoring |
-| **Dept Manager** | `deptmanager@company.com` | `Password@123` | Department-isolated access (Sales team only, 403 on other depts) |
+| **System Admin** | `admin@company.com` | `Password@123` | Full access, MLOps model controls, user management |
+| **HR Manager** | `hrmanager@company.com` | `Password@123` | Entire employee directory, CSV bulk upload, retention alerts |
+| **HR Analyst** | `hranalyst@company.com` | `Password@123` | Workforce analytics, trend drill-downs, employee scoring |
+| **Dept Manager** | `deptmanager@company.com` | `Password@123` | Department-only view (Sales team), restricted from other depts |
 
 ---
 
-## 📄 License & Academic Attribution
-Developed as part of the Final Year Capstone Project (2026–27) under the Department of Information Technology at **St. Vincent Pallotti College of Engineering and Technology, Nagpur** in technical collaboration with **IT DAKSH**. All rights reserved.
+## 📁 Repository Structure
+
+```
+Employee_Attrition/
+├── ml-service/          # Python FastAPI ML microservice, SHAP explainer, drift monitor
+│   ├── app/             # REST API routes and predictor
+│   ├── models/          # Trained champion model and preprocessor
+│   └── src/             # Data cleaning, training, explainability, retraining
+├── backend/             # Node.js Express API gateway, Prisma ORM, JWT auth
+│   ├── prisma/          # Database schema and seed data
+│   └── src/             # Controllers, routes, and middleware
+├── frontend/            # React 18 web dashboard (Tailwind CSS, Aceternity UI, Chart.js)
+│   └── src/             # Dashboard components, modals, and charts
+├── mobile/              # React Native / Expo mobile application
+│   └── src/             # Screens (Dashboard, Alerts, Directory, Employee Detail)
+├── nginx/               # Reverse proxy configuration for production
+├── aws/                 # AWS deployment guide, ECS definitions, CloudWatch alarms
+├── .github/workflows/   # CI/CD automated test and deployment pipelines
+├── docker-compose.yml   # Multi-container local/cloud deployment
+├── test_all.js          # Master test runner
+└── README.md
+```
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Machine Learning** | Python 3.10, Scikit-learn, XGBoost, SHAP, Joblib, Pandas |
+| **ML Microservice** | FastAPI, Uvicorn, Pydantic v2 |
+| **Backend & APIs** | Node.js, Express.js, Prisma ORM, JWT, Multer |
+| **Database** | PostgreSQL 15 |
+| **Web Dashboard** | React 18, Vite, Tailwind CSS, Chart.js, Lucide Icons |
+| **Mobile App** | React Native, Expo |
+| **DevOps & Cloud** | Docker, Docker Compose, Nginx, GitHub Actions, AWS (ECS, RDS, S3, CloudWatch) |
+
+---
+
+## 📄 License
+Developed for the Final Year Capstone Project (2026–27) by **Pranav Shende** and **Mayank Gotmare** at **St. Vincent Pallotti College of Engineering and Technology, Nagpur** in collaboration with **IT DAKSH**.
