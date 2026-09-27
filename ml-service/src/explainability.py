@@ -88,3 +88,50 @@ class ModelExplainer:
         # Sort by absolute SHAP impact
         factors.sort(key=lambda x: abs(x["importance"]), reverse=True)
         return factors[:top_k]
+
+    def explain_batch(self, X_trans: np.ndarray, top_k: int = 5):
+        """
+        Explain a batch of prediction instances efficiently.
+        Returns a list of top_k factor lists, one for each sample in X_trans.
+        """
+        if self.explainer is None:
+            if os.path.exists(EXPLAINER_PATH):
+                self.explainer = joblib.load(EXPLAINER_PATH)
+            else:
+                return [[] for _ in range(len(X_trans))]
+
+        try:
+            shap_values = self.explainer.shap_values(X_trans)
+        except Exception:
+            try:
+                shap_obj = self.explainer(X_trans)
+                shap_values = shap_obj.values
+            except Exception:
+                return [[] for _ in range(len(X_trans))]
+
+        if isinstance(shap_values, list):
+            values_matrix = shap_values[1] if len(shap_values) > 1 else shap_values[0]
+        elif len(np.shape(shap_values)) == 3:
+            values_matrix = shap_values[:, :, 1]
+        else:
+            values_matrix = shap_values
+
+        all_batch_factors = []
+        n_features = len(self.feature_names) if self.feature_names else values_matrix.shape[1]
+
+        for row in values_matrix:
+            factors = []
+            for i, val in enumerate(row):
+                feat_name = self.feature_names[i] if self.feature_names and i < n_features else f"feature_{i}"
+                val_float = float(val)
+                if abs(val_float) > 1e-4:
+                    factors.append({
+                        "feature": feat_name,
+                        "importance": round(val_float, 4),
+                        "impact": "Increases Risk" if val_float > 0 else "Decreases Risk",
+                    })
+            factors.sort(key=lambda x: abs(x["importance"]), reverse=True)
+            all_batch_factors.append(factors[:top_k])
+
+        return all_batch_factors
+

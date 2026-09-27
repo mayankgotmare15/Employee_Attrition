@@ -16,63 +16,46 @@ class EmployeeFeatures(BaseModel):
     employee_id: Optional[int] = Field(None, description="Optional Employee ID for reference")
     
     # Demographics & Core
-    Age: int = Field(35, ge=18, le=75, description="Employee age in years")
-    Gender: Literal["Male", "Female"] = Field("Male")
-    MaritalStatus: Literal["Single", "Married", "Divorced"] = Field("Married")
-    DistanceFromHome: int = Field(5, ge=0, le=100, description="Distance from home to work in km/miles")
+    Age: int = Field(35, description="Employee age in years")
+    Gender: str = Field("Male", description="Employee gender")
+    MaritalStatus: str = Field("Married", description="Marital status")
+    DistanceFromHome: int = Field(5, description="Distance from home to work in km/miles")
     
     # Job Role & Department
-    Department: Literal["Sales", "Research & Development", "Human Resources"] = Field("Research & Development")
-    JobRole: Literal[
-        "Sales Executive",
-        "Research Scientist",
-        "Laboratory Technician",
-        "Manufacturing Director",
-        "Healthcare Representative",
-        "Manager",
-        "Sales Representative",
-        "Research Director",
-        "Human Resources",
-    ] = Field("Research Scientist")
-    JobLevel: int = Field(2, ge=1, le=5)
-    BusinessTravel: Literal["Non-Travel", "Travel_Rarely", "Travel_Frequently"] = Field("Travel_Rarely")
+    Department: str = Field("Research & Development", description="Department")
+    JobRole: str = Field("Research Scientist", description="Job Role")
+    JobLevel: int = Field(2, description="Job Level (1-5)")
+    BusinessTravel: str = Field("Travel_Rarely", description="Travel frequency")
     
     # Work Experience & History
-    TotalWorkingYears: int = Field(8, ge=0, le=50)
-    YearsAtCompany: int = Field(4, ge=0, le=45)
-    YearsInCurrentRole: int = Field(2, ge=0, le=45)
-    YearsSinceLastPromotion: int = Field(1, ge=0, le=45)
-    YearsWithCurrManager: int = Field(2, ge=0, le=45)
-    NumCompaniesWorked: int = Field(2, ge=0, le=20)
+    TotalWorkingYears: int = Field(8, description="Total career experience")
+    YearsAtCompany: int = Field(4, description="Years at current company")
+    YearsInCurrentRole: int = Field(2, description="Years in current role")
+    YearsSinceLastPromotion: int = Field(1, description="Years since last promotion")
+    YearsWithCurrManager: int = Field(2, description="Years with current manager")
+    NumCompaniesWorked: int = Field(2, description="Number of prior companies")
     
     # Compensation & Financials
-    MonthlyIncome: int = Field(5000, ge=1000, le=50000, description="Monthly salary in USD")
-    DailyRate: int = Field(800, ge=100, le=2000)
-    HourlyRate: int = Field(65, ge=20, le=150)
-    MonthlyRate: int = Field(14000, ge=1000, le=35000)
-    PercentSalaryHike: int = Field(14, ge=0, le=50)
-    StockOptionLevel: int = Field(1, ge=0, le=3)
+    MonthlyIncome: int = Field(5000, description="Monthly salary in USD")
+    DailyRate: int = Field(800, description="Daily rate")
+    HourlyRate: int = Field(65, description="Hourly rate")
+    MonthlyRate: int = Field(14000, description="Monthly rate")
+    PercentSalaryHike: int = Field(14, description="Percent salary hike")
+    StockOptionLevel: int = Field(1, description="Stock option level")
     
     # Sentiment & Work-Life Balance (1-4 scale)
-    EnvironmentSatisfaction: int = Field(3, ge=1, le=4)
-    JobSatisfaction: int = Field(3, ge=1, le=4)
-    JobInvolvement: int = Field(3, ge=1, le=4)
-    RelationshipSatisfaction: int = Field(3, ge=1, le=4)
-    WorkLifeBalance: int = Field(3, ge=1, le=4)
+    EnvironmentSatisfaction: int = Field(3, description="Environment satisfaction (1-4)")
+    JobSatisfaction: int = Field(3, description="Job satisfaction (1-4)")
+    JobInvolvement: int = Field(3, description="Job involvement (1-4)")
+    RelationshipSatisfaction: int = Field(3, description="Relationship satisfaction (1-4)")
+    WorkLifeBalance: int = Field(3, description="Work-life balance (1-4)")
     
     # Education & Performance
-    Education: int = Field(3, ge=1, le=5)
-    EducationField: Literal[
-        "Life Sciences",
-        "Medical",
-        "Marketing",
-        "Technical Degree",
-        "Human Resources",
-        "Other",
-    ] = Field("Life Sciences")
-    PerformanceRating: int = Field(3, ge=1, le=4)
-    TrainingTimesLastYear: int = Field(2, ge=0, le=10)
-    OverTime: Literal["Yes", "No"] = Field("No")
+    Education: int = Field(3, description="Education level (1-5)")
+    EducationField: str = Field("Life Sciences", description="Education field")
+    PerformanceRating: int = Field(3, description="Performance rating (1-4)")
+    TrainingTimesLastYear: int = Field(2, description="Training sessions attended")
+    OverTime: str = Field("No", description="OverTime status ('Yes' or 'No')")
 
 class PredictionResponse(BaseModel):
     employee_id: Optional[int] = None

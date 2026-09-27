@@ -57,15 +57,58 @@ NUMERICAL_FEATURES = [
     "PromotionLag",
 ]
 
+DEFAULT_FEATURE_VALUES = {
+    "Age": 35,
+    "Gender": "Male",
+    "MaritalStatus": "Married",
+    "DistanceFromHome": 5,
+    "Department": "Research & Development",
+    "JobRole": "Research Scientist",
+    "JobLevel": 2,
+    "BusinessTravel": "Travel_Rarely",
+    "TotalWorkingYears": 6,
+    "YearsAtCompany": 3,
+    "YearsInCurrentRole": 2,
+    "YearsSinceLastPromotion": 1,
+    "YearsWithCurrManager": 2,
+    "NumCompaniesWorked": 1,
+    "MonthlyIncome": 5000,
+    "DailyRate": 800,
+    "HourlyRate": 65,
+    "MonthlyRate": 14000,
+    "PercentSalaryHike": 14,
+    "StockOptionLevel": 1,
+    "EnvironmentSatisfaction": 3,
+    "JobSatisfaction": 3,
+    "JobInvolvement": 3,
+    "RelationshipSatisfaction": 3,
+    "WorkLifeBalance": 3,
+    "Education": 3,
+    "EducationField": "Life Sciences",
+    "PerformanceRating": 3,
+    "TrainingTimesLastYear": 2,
+    "OverTime": "No",
+}
+
+def fill_missing_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure all required model columns exist, filling missing ones with domain defaults."""
+    df = df.copy()
+    for col, default_val in DEFAULT_FEATURE_VALUES.items():
+        if col not in df.columns:
+            df[col] = default_val
+        else:
+            df[col] = df[col].fillna(default_val)
+    return df
+
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     """Add domain-specific HR engineered features."""
-    df = df.copy()
+    df = fill_missing_features(df)
     
     # Combined satisfaction score
     df["TotalSatisfaction"] = (
-        df.get("EnvironmentSatisfaction", 0)
-        + df.get("JobSatisfaction", 0)
-        + df.get("RelationshipSatisfaction", 0)
+        df["EnvironmentSatisfaction"]
+        + df["JobSatisfaction"]
+        + df["RelationshipSatisfaction"]
     )
     
     # Role tenure ratio
@@ -80,9 +123,11 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
-    """Drop constant/uninformative columns."""
+    """Drop constant/uninformative columns and fill missing features."""
+    df = fill_missing_features(df)
     cols_to_drop = [c for c in DROP_COLUMNS if c in df.columns]
     return df.drop(columns=cols_to_drop)
+
 
 def build_preprocessor() -> ColumnTransformer:
     """Build scikit-learn ColumnTransformer for scaling & one-hot encoding."""

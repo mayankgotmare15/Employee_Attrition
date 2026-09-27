@@ -8,6 +8,7 @@ const {
   updateEmployee,
   deleteEmployee,
   uploadCSV,
+  getSampleCSV,
 } = require('../controllers/employeeController');
 const { authenticateToken, requireRoles } = require('../middleware/auth');
 
@@ -22,15 +23,23 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+    const isCsvName = (file.originalname || '').toLowerCase().endsWith('.csv');
+    const isCsvMime = (file.mimetype || '').includes('csv') || 
+                      (file.mimetype || '').includes('excel') || 
+                      (file.mimetype || '').includes('text') ||
+                      file.mimetype === 'application/octet-stream';
+    if (isCsvName || isCsvMime) {
       cb(null, true);
     } else {
       cb(new Error('Only .csv files are supported.'));
     }
   },
 });
+
+// Download sample CSV template (accessible without token or with token)
+router.get('/sample-csv', getSampleCSV);
 
 router.use(authenticateToken);
 
@@ -40,5 +49,6 @@ router.post('/', requireRoles('ADMIN', 'HR_MANAGER', 'HR_ANALYST'), createEmploy
 router.put('/:id', requireRoles('ADMIN', 'HR_MANAGER', 'HR_ANALYST'), updateEmployee);
 router.delete('/:id', requireRoles('ADMIN', 'HR_MANAGER'), deleteEmployee);
 router.post('/upload-csv', requireRoles('ADMIN', 'HR_MANAGER', 'HR_ANALYST'), upload.single('file'), uploadCSV);
+
 
 module.exports = router;

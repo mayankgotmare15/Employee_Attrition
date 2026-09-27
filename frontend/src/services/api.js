@@ -104,7 +104,11 @@ export const api = {
       if (!res.ok) throw new Error(data.message || "CSV upload failed");
       return data;
     },
+    downloadSampleCSV: () => {
+      window.open(`${API_BASE}/employees/sample-csv`, "_blank");
+    },
   },
+
 
   predictions: {
     predict: (employeeId) =>

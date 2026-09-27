@@ -133,21 +133,62 @@ class AttritionPredictor:
         )
 
     def predict_batch(self, employees: List[EmployeeFeatures]) -> BatchPredictionResponse:
-        """Run batch inference for multiple employees."""
+        """Run high-speed vectorized batch inference for multiple employees."""
+        if not employees:
+            return BatchPredictionResponse(
+                total_processed=0,
+                high_risk_count=0,
+                medium_risk_count=0,
+                low_risk_count=0,
+                predictions=[],
+            )
+
+        emp_dicts = [emp.model_dump() for emp in employees]
+        emp_ids = [d.pop("employee_id", None) for d in emp_dicts]
+
+        df = pd.DataFrame(emp_dicts)
+        df = clean_data(df)
+        df = engineer_features(df)
+
+        X_trans = self.preprocessor.transform(df)
+        probs_all = self.model.predict_proba(X_trans)[:, 1]
+
+        try:
+            shap_factors_batch = self.explainer.explain_batch(X_trans, top_k=5)
+        except Exception as e:
+            print(f"Warning: Batch SHAP computation error: {e}")
+            shap_factors_batch = [[] for _ in range(len(employees))]
+
+        version = self.metadata.get("model_version", "v1.0.0")
         predictions: List[PredictionResponse] = []
         high_cnt = 0
         med_cnt = 0
         low_cnt = 0
 
-        for emp in employees:
-            pred = self.predict_single(emp)
-            if pred.risk_tier == "High":
+        for i, prob in enumerate(probs_all):
+            attrition_prob = float(round(prob, 4))
+            risk_tier = self.classify_risk_tier(attrition_prob)
+            if risk_tier == "High":
                 high_cnt += 1
-            elif pred.risk_tier == "Medium":
+            elif risk_tier == "Medium":
                 med_cnt += 1
             else:
                 low_cnt += 1
-            predictions.append(pred)
+
+            raw_factors = shap_factors_batch[i] if i < len(shap_factors_batch) else []
+            top_risk_factors = [RiskFactor(**f) for f in raw_factors]
+            recommendation = self.generate_recommendation(attrition_prob, risk_tier, raw_factors)
+
+            predictions.append(
+                PredictionResponse(
+                    employee_id=emp_ids[i],
+                    attrition_probability=attrition_prob,
+                    risk_tier=risk_tier,
+                    recommended_action=recommendation,
+                    top_risk_factors=top_risk_factors,
+                    model_version=version,
+                )
+            )
 
         return BatchPredictionResponse(
             total_processed=len(predictions),
@@ -156,6 +197,7 @@ class AttritionPredictor:
             low_risk_count=low_cnt,
             predictions=predictions,
         )
+
 
 # Global singleton predictor instance
 _predictor = None

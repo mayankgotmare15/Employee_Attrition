@@ -1,5 +1,5 @@
 {
-  "model_version": "v1.2.0",
+  "model_version": "v1.5.0",
   "champion_algorithm": "LogisticRegression",
   "champion_metrics": {
     "algorithm": "LogisticRegression",
@@ -35,7 +35,7 @@
       "roc_auc": 0.7818
     }
   ],
-  "trained_at": "2026-09-27T06:53:07.183967Z",
+  "trained_at": "2026-09-27T07:23:38.637749Z",
   "dataset_rows": 1470,
   "total_features": 55,
   "feature_names": [
@@ -121,6 +121,45 @@
         "roc_auc": 0.8074
       },
       "retired_at": "2026-09-27T06:53:07.183967Z"
+    },
+    {
+      "version": "v1.2.0",
+      "algorithm": "LogisticRegression",
+      "metrics": {
+        "algorithm": "LogisticRegression",
+        "accuracy": 0.7857,
+        "precision": 0.3974,
+        "recall": 0.6596,
+        "f1_score": 0.496,
+        "roc_auc": 0.8074
+      },
+      "retired_at": "2026-09-27T07:03:46.826391Z"
+    },
+    {
+      "version": "v1.3.0",
+      "algorithm": "LogisticRegression",
+      "metrics": {
+        "algorithm": "LogisticRegression",
+        "accuracy": 0.7857,
+        "precision": 0.3974,
+        "recall": 0.6596,
+        "f1_score": 0.496,
+        "roc_auc": 0.8074
+      },
+      "retired_at": "2026-09-27T07:11:23.489227Z"
+    },
+    {
+      "version": "v1.4.0",
+      "algorithm": "LogisticRegression",
+      "metrics": {
+        "algorithm": "LogisticRegression",
+        "accuracy": 0.7857,
+        "precision": 0.3974,
+        "recall": 0.6596,
+        "f1_score": 0.496,
+        "roc_auc": 0.8074
+      },
+      "retired_at": "2026-09-27T07:23:38.637749Z"
     }
   ],
   "last_retrained_reason": "Automated trigger: Drift Z-score (5.9908) exceeded 2.0 threshold"
