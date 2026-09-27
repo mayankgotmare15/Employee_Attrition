@@ -1,7 +1,15 @@
 /**
  * API Service for interacting with Node.js Backend API Gateway.
  */
-const API_BASE = "http://localhost:5000/api/v1";
+const RAW_API_URL = import.meta.env.VITE_API_URL || "";
+const API_BASE = RAW_API_URL
+  ? `${RAW_API_URL.replace(/\/$/, "")}/api/v1`
+  : typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1")
+  ? "http://localhost:5000/api/v1"
+  : "/api/v1";
+
 
 function getAuthHeader() {
   const token = localStorage.getItem("attrition_token");

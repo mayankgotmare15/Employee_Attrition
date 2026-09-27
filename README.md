@@ -127,6 +127,16 @@ docker-compose up --build
 
 ---
 
+### Option C: Deploy Frontend to Vercel
+Deploy the React web dashboard directly to Vercel in under 2 minutes:
+1. Import repository `mayankgotmare15/Employee_Attrition` on [vercel.com](https://vercel.com).
+2. Select Root Directory as `frontend` (or leave default root `./`).
+3. Set Environment Variable `VITE_API_URL` to your hosted backend URL.
+4. Click **Deploy**. Detailed instructions are in [Vercel Deployment Guide](docs/vercel_deployment.md).
+
+
+---
+
 ## 🧪 Testing the Project
 
 RetainIQ includes a single, unified test command that runs all 4 test suites across the entire stack:
