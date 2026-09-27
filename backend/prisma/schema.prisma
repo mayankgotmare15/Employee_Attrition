@@ -1,0 +1,146 @@
+// Prisma schema for Employee Attrition Prediction & HR Analytics System
+// Department of IT, St. Vincent Pallotti College of Eng & Tech & IT DAKSH
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  HR_MANAGER
+  HR_ANALYST
+  DEPT_MANAGER
+}
+
+enum RiskTier {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ModelStatus {
+  ACTIVE
+  CANDIDATE
+  ARCHIVED
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  TERMINATED
+  ON_LEAVE
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(HR_ANALYST)
+  department   String?  // Scopes DEPT_MANAGER view to specific department
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Employee {
+  id                       Int            @id @default(autoincrement())
+  employeeNumber           Int            @unique
+  firstName                String
+  lastName                 String
+  email                    String?        @unique
+  age                      Int
+  gender                   String
+  maritalStatus            String
+  distanceFromHome         Int
+  
+  // Organization Details
+  department               String
+  jobRole                  String
+  jobLevel                 Int
+  businessTravel           String
+  
+  // Experience & History
+  totalWorkingYears        Int
+  yearsAtCompany           Int
+  yearsInCurrentRole       Int
+  yearsSinceLastPromotion  Int
+  yearsWithCurrManager     Int
+  numCompaniesWorked       Int
+  
+  // Compensation
+  monthlyIncome            Int
+  dailyRate                Int
+  hourlyRate               Int
+  monthlyRate              Int
+  percentSalaryHike        Int
+  stockOptionLevel         Int
+  
+  // Sentiment & Ratings (1-4 scale)
+  environmentSatisfaction  Int
+  jobSatisfaction          Int
+  jobInvolvement           Int
+  relationshipSatisfaction Int
+  workLifeBalance          Int
+  
+  // Education & Performance
+  education                Int
+  educationField           String
+  performanceRating        Int
+  trainingTimesLastYear    Int
+  overTime                 String         // "Yes" or "No"
+  
+  status                   EmployeeStatus @default(ACTIVE)
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+
+  // Relationships
+  predictions              Prediction[]
+
+  @@map("employees")
+}
+
+model ModelVersion {
+  id           Int          @id @default(autoincrement())
+  version      String       @unique // e.g. "v1.0.0"
+  algorithm    String       // e.g. "LogisticRegression", "XGBoost"
+  accuracy     Float
+  f1Score      Float
+  rocAuc       Float
+  precision    Float?
+  recall       Float?
+  status       ModelStatus  @default(CANDIDATE)
+  trainedAt    DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relationships
+  predictions  Prediction[]
+
+  @@map("model_versions")
+}
+
+model Prediction {
+  id                   Int          @id @default(autoincrement())
+  employeeId           Int
+  modelVersionId       Int
+  attritionProbability Float
+  riskTier             RiskTier
+  recommendedAction    String
+  topRiskFactors       Json         // SHAP contributions array: [{feature, importance, impact}]
+  predictedAt          DateTime     @default(now())
+
+  // Relationships
+  employee             Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  modelVersion         ModelVersion @relation(fields: [modelVersionId], references: [id], onDelete: Restrict)
+
+  @@index([employeeId])
+  @@index([modelVersionId])
+  @@index([riskTier])
+  @@map("predictions")
+}
