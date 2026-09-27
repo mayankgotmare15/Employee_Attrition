@@ -1,7 +1,5 @@
 databases:
   - name: retainiq-db
-    databaseName: attrition_db
-    user: postgres
     plan: free
 
 services:
