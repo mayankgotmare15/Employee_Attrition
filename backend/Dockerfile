@@ -20,5 +20,5 @@ COPY src ./src
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "npx prisma db push && node prisma/seed.js && node src/index.js"]
+CMD ["node", "src/index.js"]
 
