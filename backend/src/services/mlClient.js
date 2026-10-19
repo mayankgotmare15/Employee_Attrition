@@ -1,10 +1,11 @@
 /**
  * Microservice Client for FastAPI ML Prediction & MLOps Engine.
  */
-const RAW_ML_URL = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+const RAW_ML_URL = process.env.ML_SERVICE_URL || 'https://retainiq-ml-service.onrender.com';
 const ML_SERVICE_URL = RAW_ML_URL.startsWith('http://') || RAW_ML_URL.startsWith('https://')
   ? RAW_ML_URL.replace(/\/$/, '')
-  : `http://${RAW_ML_URL.replace(/\/$/, '')}`;
+  : `https://${RAW_ML_URL.replace(/\/$/, '')}`;
+
 
 
 class MLClient {

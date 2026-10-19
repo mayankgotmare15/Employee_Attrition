@@ -31,8 +31,26 @@ jobs:
           if [ "$HTTP_STATUS" -eq 200 ]; then
             echo "✅ Render backend is active and healthy!"
           elif [ "$HTTP_STATUS" -eq 502 ] || [ "$HTTP_STATUS" -eq 503 ] || [ "$HTTP_STATUS" -eq 504 ]; then
-            echo "⚡ Render container is currently spinning up (cold-start). Keep-alive will maintain it awake."
+            echo "⚡ Render backend container is currently spinning up (cold-start). Keep-alive will maintain it awake."
           else
             echo "⚠️ Health probe returned status: $HTTP_STATUS. Attempting root ping fallback..."
             curl -s -I "$TARGET_URL/" || true
           fi
+
+      - name: Send Keep-Alive Ping to FastAPI ML Microservice
+        run: |
+          ML_URL="${{ vars.RENDER_ML_URL || 'https://retainiq-ml-service.onrender.com' }}"
+          echo "=========================================================="
+          echo "Sending keep-alive heartbeat to ML Service: $ML_URL"
+          echo "=========================================================="
+          
+          ML_STATUS=$(curl -s -o /tmp/ml_health.json -w "%{http_code}" "$ML_URL/health" || echo "000")
+          echo "ML Service Status: $ML_STATUS"
+          if [ -f /tmp/ml_health.json ]; then
+            cat /tmp/ml_health.json
+            echo ""
+          fi
+          if [ "$ML_STATUS" -eq 200 ]; then
+            echo "✅ FastAPI ML microservice is active and healthy!"
+          fi
+
