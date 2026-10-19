@@ -1,12 +1,17 @@
 /**
  * Microservice Client for FastAPI ML Prediction & MLOps Engine.
  */
-const RAW_ML_URL = process.env.ML_SERVICE_URL || 'https://retainiq-ml-service.onrender.com';
-const ML_SERVICE_URL = RAW_ML_URL.startsWith('http://') || RAW_ML_URL.startsWith('https://')
-  ? RAW_ML_URL.replace(/\/$/, '')
-  : `https://${RAW_ML_URL.replace(/\/$/, '')}`;
-
-
+function getMlServiceUrl() {
+  const raw = (process.env.ML_SERVICE_URL || 'https://retainiq-ml-service.onrender.com').trim();
+  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+    return raw.replace(/\/$/, '');
+  }
+  if (raw.includes('.')) {
+    return 'https://' + raw.replace(/\/$/, '');
+  }
+  return 'http://' + raw.replace(/\/$/, '') + ':8000';
+}
+const ML_SERVICE_URL = getMlServiceUrl();
 
 class MLClient {
   /**

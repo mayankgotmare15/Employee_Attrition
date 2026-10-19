@@ -10,6 +10,7 @@ services:
     dockerContext: ./ml-service
     dockerfilePath: ./ml-service/Dockerfile
     plan: free
+    healthCheckPath: /health
     envVars:
       - key: PORT
         value: 8000
@@ -23,11 +24,14 @@ services:
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
     plan: free
+    healthCheckPath: /health
     envVars:
       - key: PORT
         value: 5000
       - key: NODE_ENV
         value: production
+      - key: AUTO_MIGRATE
+        value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
