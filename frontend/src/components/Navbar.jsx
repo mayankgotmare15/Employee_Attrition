@@ -9,9 +9,11 @@ import {
   Cpu,
   Layers,
   Sparkles,
+  Bot,
+  MessageSquare,
 } from "lucide-react";
 
-export default function Navbar({ onOpenMetrics }) {
+export default function Navbar({ onOpenMetrics, onOpenChatbot }) {
   const { user, logout, quickSwitchUser } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -41,18 +43,29 @@ export default function Navbar({ onOpenMetrics }) {
           </div>
         </div>
 
-        {/* Center / Model Telemetry Indicator */}
-        <div className="hidden md:flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3.5 py-1 text-xs text-slate-300">
-          <Cpu className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
-          <span>Active Champion:</span>
-          <span className="font-semibold text-emerald-400">LogisticRegression</span>
-          <span className="text-slate-600">•</span>
-          <span className="font-mono text-slate-400">ROC-AUC: 80.8%</span>
+        {/* Center / Model Telemetry & AI Chatbot Indicators */}
+        <div className="hidden md:flex items-center gap-3">
+          <div className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3.5 py-1 text-xs text-slate-300">
+            <Cpu className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
+            <span>Active Champion:</span>
+            <span className="font-semibold text-emerald-400">LogisticRegression</span>
+            <span className="text-slate-600">•</span>
+            <span className="font-mono text-slate-400">ROC-AUC: 80.8%</span>
+            <button
+              onClick={onOpenMetrics}
+              className="ml-1 text-[11px] text-indigo-400 hover:text-indigo-300 underline font-medium"
+            >
+              Telemetry
+            </button>
+          </div>
+
           <button
-            onClick={onOpenMetrics}
-            className="ml-1 text-[11px] text-indigo-400 hover:text-indigo-300 underline font-medium"
+            onClick={onOpenChatbot}
+            className="flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 hover:bg-indigo-500/25 px-3.5 py-1 text-xs font-semibold text-indigo-200 shadow-sm transition-all hover:scale-105"
           >
-            Telemetry
+            <Bot className="h-3.5 w-3.5 text-indigo-400" />
+            <span>AI Advisor</span>
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
           </button>
         </div>
 

@@ -12,7 +12,8 @@ import UploadCsvModal from "./components/UploadCsvModal";
 import ModelMetricsModal from "./components/ModelMetricsModal";
 import LoginModal from "./components/LoginModal";
 import ServerWarmupBanner from "./components/ServerWarmupBanner";
-import { Loader2 } from "lucide-react";
+import ChatbotAdvisor from "./components/ChatbotAdvisor";
+import { Loader2, Bot, Sparkles } from "lucide-react";
 
 export default function App() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -37,6 +38,7 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isMetricsModalOpen, setIsMetricsModalOpen] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   const [predictingId, setPredictingId] = useState(null);
   const [batchPredicting, setBatchPredicting] = useState(false);
@@ -153,7 +155,10 @@ export default function App() {
     <div className="min-h-screen bg-[#080c14] text-slate-100 bg-grid-pattern selection:bg-indigo-500 selection:text-white">
       <ServerWarmupBanner />
       {/* Navbar */}
-      <Navbar onOpenMetrics={() => setIsMetricsModalOpen(true)} />
+      <Navbar
+        onOpenMetrics={() => setIsMetricsModalOpen(true)}
+        onOpenChatbot={() => setIsChatbotOpen(true)}
+      />
 
       {/* Main Content Dashboard */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -220,6 +225,27 @@ export default function App() {
         isOpen={isMetricsModalOpen}
         onClose={() => setIsMetricsModalOpen(false)}
         onModelUpdated={loadData}
+      />
+
+      {/* Floating AI Chatbot Advisor Launch Button */}
+      <button
+        onClick={() => setIsChatbotOpen(true)}
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-3 sm:px-4 sm:py-3 text-white shadow-2xl shadow-indigo-500/40 hover:scale-105 active:scale-95 transition-all duration-300 group border border-white/10"
+        title="Open RetainIQ AI Retention Advisor & Property Inspector"
+      >
+        <Bot className="h-5 w-5 text-white animate-pulse" />
+        <span className="hidden sm:inline-block text-xs font-bold tracking-wide">AI Advisor</span>
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+        </span>
+      </button>
+
+      {/* Interactive AI Chatbot Advisor Drawer */}
+      <ChatbotAdvisor
+        isOpen={isChatbotOpen}
+        onClose={() => setIsChatbotOpen(false)}
+        onSelectEmployee={(id) => setSelectedEmployeeId(id)}
       />
     </div>
   );
