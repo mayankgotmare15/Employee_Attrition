@@ -11,6 +11,7 @@ import AddEmployeeModal from "./components/AddEmployeeModal";
 import UploadCsvModal from "./components/UploadCsvModal";
 import ModelMetricsModal from "./components/ModelMetricsModal";
 import LoginModal from "./components/LoginModal";
+import ServerWarmupBanner from "./components/ServerWarmupBanner";
 import { Loader2 } from "lucide-react";
 
 export default function App() {
@@ -140,11 +141,17 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
-    return <LoginModal />;
+    return (
+      <>
+        <ServerWarmupBanner />
+        <LoginModal />
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen bg-[#080c14] text-slate-100 bg-grid-pattern selection:bg-indigo-500 selection:text-white">
+      <ServerWarmupBanner />
       {/* Navbar */}
       <Navbar onOpenMetrics={() => setIsMetricsModalOpen(true)} />
 

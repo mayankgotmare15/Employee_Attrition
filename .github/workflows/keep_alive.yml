@@ -1,0 +1,38 @@
+name: RetainIQ Render Keep-Alive
+
+on:
+  schedule:
+    # Run every 12 minutes (Render free tier sleeps after 15 minutes of inactivity)
+    - cron: '*/12 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  keep-alive:
+    name: Ping Cloud Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Keep-Alive Ping to Render Backend
+        run: |
+          TARGET_URL="${{ vars.RENDER_BACKEND_URL || 'https://retainiq-backend.onrender.com' }}"
+          echo "=========================================================="
+          echo "Sending keep-alive heartbeat to: $TARGET_URL"
+          echo "Current UTC Timestamp: $(date -u)"
+          echo "=========================================================="
+          
+          # Attempt pinging the /api/health endpoint
+          HTTP_STATUS=$(curl -s -o /tmp/health_response.json -w "%{http_code}" "$TARGET_URL/api/health" || echo "000")
+          
+          echo "HTTP Response Status: $HTTP_STATUS"
+          if [ -f /tmp/health_response.json ]; then
+            cat /tmp/health_response.json
+            echo ""
+          fi
+          
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ Render backend is active and healthy!"
+          elif [ "$HTTP_STATUS" -eq 502 ] || [ "$HTTP_STATUS" -eq 503 ] || [ "$HTTP_STATUS" -eq 504 ]; then
+            echo "⚡ Render container is currently spinning up (cold-start). Keep-alive will maintain it awake."
+          else
+            echo "⚠️ Health probe returned status: $HTTP_STATUS. Attempting root ping fallback..."
+            curl -s -I "$TARGET_URL/" || true
+          fi
